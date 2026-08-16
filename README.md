@@ -1,3 +1,4 @@
+
 # RaceGuard: Race Condition Detection & Visualization Dashboard
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
@@ -136,3 +137,5 @@ For each shared variable $v$:
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+# Race-Condititon-Detection-tool
+
