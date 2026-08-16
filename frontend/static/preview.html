@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RaceGuard - UI Design Samples Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding: 2rem 1.5rem;
+      line-height: 1.6;
+    }
+    .header {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 3rem;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .header p {
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .option-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .option-card-header {
+      padding: 1.5rem 2rem;
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .option-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .option-badge {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #818cf8;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .option-body {
+      padding: 2rem;
+    }
+    .img-container {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      margin-bottom: 1.5rem;
+    }
+    .img-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.25rem;
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 1.25rem;
+      border: 1px solid #1e293b;
+    }
+    .spec-item h4 {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .spec-item p {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>⚡ RaceGuard UI Design Options</h1>
+    <p>Compare the 3 professional, clean developer interface options below and tell me which option you prefer.</p>
+  </div>
+
+  <div class="options-grid">
+
+    <!-- Option 1 -->
+    <div class="option-card">
+      <div class="option-card-header">
+        <div class="option-title">Option 1: Linear & Vercel Inspired Minimal Tech</div>
+        <span class="option-badge">Minimal & High-Density</span>
+      </div>
+      <div class="option-body">
+        <div class="img-container">
+          <img src="/static/images/option1.png" alt="Option 1 UI Preview">
+        </div>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <h4>Palette</h4>
+            <p>Matte Dark (#09090b), Hairline Zinc (#27272a), Crisp Indigo (#6366f1)</p>
+          </div>
+          <div class="spec-item">
+            <h4>Vibe</h4>
+            <p>Ultra-clean, high density, developer precision with subtle accents</p>
+          </div>
+          <div class="spec-item">
+            <h4>Best For</h4>
+            <p>Software engineers wanting compact information & clean borders</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="option-card">
+      <div class="option-card-header">
+        <div class="option-title">Option 2: Corporate Enterprise Slate (GitHub / VS Code)</div>
+        <span class="option-badge">High Readability & Structured</span>
+      </div>
+      <div class="option-body">
+        <div class="img-container">
+          <img src="/static/images/option2.png" alt="Option 2 UI Preview">
+        </div>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <h4>Palette</h4>
+            <p>Navy Slate (#0f172a / #1e293b), Emerald (#10b981), Crimson (#ef4444)</p>
+          </div>
+          <div class="spec-item">
+            <h4>Vibe</h4>
+            <p>Structured dashboard with strong visual hierarchy and high contrast</p>
+          </div>
+          <div class="spec-item">
+            <h4>Best For</h4>
+            <p>Coursework demos, accessibility, and clear status separation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="option-card">
+      <div class="option-card-header">
+        <div class="option-title">Option 3: Carbon Studio Minimal (JetBrains Dark)</div>
+        <span class="option-badge">Minimal Studio & Compact</span>
+      </div>
+      <div class="option-body">
+        <div class="img-container">
+          <img src="/static/images/option3.png" alt="Option 3 UI Preview">
+        </div>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <h4>Palette</h4>
+            <p>Carbon Black (#121316), Electric Teal (#14b8a6), Subtle Violet (#8b5cf6)</p>
+          </div>
+          <div class="spec-item">
+            <h4>Vibe</h4>
+            <p>IDE studio aesthetic with compact rounded controls and linear step blocks</p>
+          </div>
+          <div class="spec-item">
+            <h4>Best For</h4>
+            <p>Modern developer tools with a dark carbon atmosphere</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

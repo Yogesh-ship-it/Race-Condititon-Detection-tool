@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RaceGuard - Race Condition Detector | CSE316</title>
+  <meta name="description"
+    content="Simulated race condition detection and visualization tool using Bernstein's Conditions and the Eraser Lockset Algorithm for OS/Concurrency courses.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <span class="brand-title">RaceGuard</span>
+        <span class="brand-tag">Race Condition Detector · CSE316</span>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="design">🛠️ Design</button>
+      <button class="nav-tab" data-tab="results">📊 Results</button>
+      <button class="nav-tab" data-tab="learn">🎓 Learn</button>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn-secondary" id="btn-reset">↺ Reset</button>
+      <button class="btn-primary" id="btn-detect">▶ Detect Cases</button>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Hero Section -->
+    <header class="hero">
+      <h1>Race Condition Detection Tool</h1>
+      <p>
+        Design concurrent threads, define their <em>READ/WRITE</em> operations on shared variables,
+        and detect race conditions using industry-standard algorithms. This tool applies
+        <em>Bernstein's Conditions</em> to identify conflicting operations and the <em>Eraser/Lockset algorithm</em> to
+        verify mutex protection.
+      </p>
+      <div class="pills-container">
+        <span class="pill">Bernstein's Conditions</span>
+        <span class="pill">Lockset Analysis</span>
+        <span class="pill">Visual Timeline</span>
+        <span class="pill">Memory Heatmap</span>
+      </div>
+    </header>
+
+    <!-- Tab Section: DESIGN -->
+    <section id="tab-design" class="tab-content">
+
+      <!-- Quick Start Presets -->
+      <div class="section-title">
+        <h2>📦 Quick Start Presets</h2>
+      </div>
+      <p class="section-desc">
+        Select a preset scenario to auto-populate threads, or build your own below.
+      </p>
+
+      <div class="presets-grid" id="presets-container">
+        <!-- Dynamic Preset Cards rendered by JS -->
+      </div>
+
+      <!-- Mutex Fix Mode Toggle -->
+      <div class="fix-toggle-bar">
+        <div class="fix-toggle-info">
+          <span style="font-size: 1.3rem;">🛡️</span>
+          <div>
+            <div class="fix-toggle-title">Apply Mutex Synchronization (Fix Mode)</div>
+            <div class="fix-toggle-desc">Toggle to automatically apply proper lock usage across threads for live
+              comparison during demo</div>
+          </div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="fix-mode-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Variables Manager Bar -->
+      <div class="variables-bar">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <span style="font-weight: 600; font-size: 0.9rem; color: #f1f5f9;">Shared Variables:</span>
+          <div class="var-list" id="variables-list">
+            <!-- Dynamic Var Chips -->
+          </div>
+        </div>
+        <form class="add-var-form" id="form-add-var">
+          <input type="text" id="input-new-var" class="input-sm" placeholder="e.g. balance, count" required>
+          <button type="submit" class="btn-secondary" style="padding: 0.35rem 0.75rem;">+ Add Variable</button>
+        </form>
+      </div>
+
+      <!-- Thread Designer Section -->
+      <div class="section-title">
+        <h2>🛠️ Thread Designer</h2>
+        <button class="btn-secondary" id="btn-add-thread">+ Add Thread</button>
+      </div>
+      <p class="section-desc">
+        Each card below represents a thread — an independent unit of execution. Add READ / WRITE operations on shared
+        variables, and optionally use LOCK / UNLOCK to protect them with a mutex. A race condition occurs when two
+        threads access the same variable concurrently and at least one writes — without holding a common lock.
+      </p>
+
+      <div class="threads-container" id="threads-container">
+        <!-- Dynamic Thread Cards -->
+      </div>
+    </section>
+
+
+    <!-- Tab Section: RESULTS -->
+    <section id="tab-results" class="tab-content" style="display: none;">
+
+      <!-- Live Detection Summary Text Banner -->
+      <div class="results-summary-banner" id="results-summary-banner">
+        Found <strong id="summary-race-count">3</strong> race condition<span id="summary-race-plural">s</span> across
+        <strong id="summary-thread-count">2</strong> threads and <strong id="summary-var-count">1</strong> shared
+        variable. Scroll down to see the timeline visualization, memory heatmap, and detailed report.
+      </div>
+
+      <!-- Metric Stat Cards (4 Cards Grid matching Image 2) -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-value" id="metric-threads">0</div>
+          <div class="metric-label">THREADS</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="metric-vars">0</div>
+          <div class="metric-label">VARIABLES</div>
+        </div>
+        <div class="metric-card critical-highlight">
+          <div class="metric-value critical" id="metric-races">0</div>
+          <div class="metric-label">RACES FOUND</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value safe" id="metric-protected">0</div>
+          <div class="metric-label">PROTECTED</div>
+        </div>
+      </div>
+
+      <!-- Sub-Tab Navigation Bar -->
+      <div class="subnav-container">
+        <div class="subnav-tabs">
+          <button class="subnav-tab active" data-subtab="timeline">⏱️ Timeline</button>
+          <button class="subnav-tab" data-subtab="heatmap">🔥 Heatmap</button>
+          <button class="subnav-tab" data-subtab="report">📜 Report</button>
+          <button class="subnav-tab" data-subtab="varstates">🧮 State Tracker</button>
+          <button class="subnav-tab" data-subtab="codeexport">💻 Code Generator</button>
+        </div>
+      </div>
+
+      <!-- Sub-Tab Content 1: TIMELINE -->
+      <div id="subtab-timeline" class="subtab-content">
+
+        <!-- Execution Timeline Instruction Banner -->
+        <div class="timeline-banner">
+          <strong>Execution Timeline:</strong> Shows how operations from different threads interleave in time.
+          Operations involved in a race are highlighted in red. Dashed arcs connect conflicting pairs.
+        </div>
+
+        <!-- Controls Bar & Legend -->
+        <div class="timeline-controls-bar">
+          <div class="timeline-ctrl-group">
+            <button class="btn-ctrl" id="btn-ctrl-prev">◄ Prev</button>
+            <button class="btn-ctrl active" id="btn-ctrl-all">All steps</button>
+            <button class="btn-ctrl" id="btn-ctrl-next">Next ►</button>
+            <button class="btn-auto-play" id="btn-ctrl-auto">► Auto</button>
+          </div>
+
+          <div class="timeline-legend">
+            <div class="legend-item"><span class="legend-dot read"></span> READ</div>
+            <div class="legend-item"><span class="legend-dot write"></span> WRITE</div>
+            <div class="legend-item"><span class="legend-dot lock"></span> LOCK</div>
+            <div class="legend-item"><span class="legend-dot unlock"></span> UNLOCK</div>
+            <div class="legend-item"><span class="legend-dot race"></span> RACE</div>
+          </div>
+        </div>
+
+        <!-- Timeline Matrix Grid with SVG Conflict Arcs Overlay -->
+        <div class="timeline-matrix-wrapper" id="timeline-matrix-wrapper">
+          <svg class="timeline-svg-overlay" id="timeline-svg-overlay"></svg>
+          <div class="timeline-matrix" id="timeline-matrix">
+            <!-- Dynamic Matrix Grid rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sub-Tab Content 2: HEATMAP -->
+      <div id="subtab-heatmap" class="subtab-content" style="display: none;">
+        <div class="section-title">
+          <h2>🔥 Shared Memory Access Heat Map</h2>
+        </div>
+        <p class="section-desc">
+          Grid visualization of memory access across time steps. Rows represent shared variables, columns represent time
+          steps. Red/Orange cells highlight race condition windows.
+        </p>
+
+        <div class="heatmap-container">
+          <div class="heatmap-grid" id="heatmap-grid">
+            <!-- Dynamic Heat Map Grid -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-Tab Content 3: REPORT -->
+      <div id="subtab-report" class="subtab-content" style="display: none;">
+        <div class="section-title">
+          <h2>🚨 Diagnostic Conflict Report</h2>
+        </div>
+        <div class="reports-container" id="reports-container">
+          <!-- Dynamic Diagnostic Cards -->
+        </div>
+      </div>
+
+      <!-- Sub-Tab Content 4: LIVE VARIABLE STATE TRACKER -->
+      <div id="subtab-varstates" class="subtab-content" style="display: none;">
+        <div class="section-title">
+          <h2>🧮 Live Variable State Tracker</h2>
+        </div>
+        <p class="section-desc">
+          Simulates real-time memory value mutations step-by-step. Compares actual corrupted memory states (caused by unsynchronized race conditions) against expected synchronized outcomes.
+        </p>
+
+        <!-- Live Summary Cards Container -->
+        <div class="var-states-cards" id="var-states-cards">
+          <!-- Dynamic Variable Cards -->
+        </div>
+
+        <!-- Step Progression Evolution Table -->
+        <div class="var-states-history" id="var-states-history">
+          <!-- Dynamic Step Evolution Table -->
+        </div>
+      </div>
+
+      <!-- Sub-Tab Content 5: NATIVE CODE EXPORTER -->
+      <div id="subtab-codeexport" class="subtab-content" style="display: none;">
+        <div class="section-title">
+          <h2>💻 Native OS Code Exporter</h2>
+        </div>
+        <p class="section-desc">
+          Exports compilable C (POSIX pthreads) and Python (threading) source code corresponding to the current scenario. Run this directly in your terminal to observe OS kernel thread behavior live!
+        </p>
+
+        <!-- Code Exporter Controls Toolbar -->
+        <div class="code-export-toolbar">
+          <div class="lang-selector-group">
+            <button class="lang-btn active" id="btn-lang-c" data-lang="c">
+              <span>⚡</span> C (POSIX pthreads)
+            </button>
+            <button class="lang-btn" id="btn-lang-py" data-lang="python">
+              <span>🐍</span> Python (threading)
+            </button>
+          </div>
+
+          <div class="code-action-group">
+            <button class="btn-code-action" id="btn-copy-code">
+              <span>📋</span> Copy Code
+            </button>
+            <button class="btn-code-action primary" id="btn-download-code">
+              <span>💾</span> Download File
+            </button>
+          </div>
+        </div>
+
+        <!-- Terminal Run Command Banner -->
+        <div class="terminal-banner" id="terminal-banner">
+          <span class="terminal-icon">❯_</span>
+          <span class="terminal-label">Compile & Run:</span>
+          <code class="terminal-cmd" id="terminal-cmd">gcc -pthread race_demo.c -o race_demo && ./race_demo</code>
+        </div>
+
+        <!-- Code Editor / Viewer Box -->
+        <div class="code-editor-box">
+          <div class="code-editor-header">
+            <div class="code-file-title" id="code-file-title">race_demo.c</div>
+            <div class="code-mode-badge" id="code-mode-badge">BUGGY MODE</div>
+          </div>
+          <pre class="code-editor-pre"><code id="code-editor-content">// Generating source code...</code></pre>
+        </div>
+      </div>
+
+      <!-- Bottom Race Alert Card -->
+      <div class="bottom-alert-container">
+        <div class="bottom-race-card" id="bottom-race-card">
+          ⚡ <span id="bottom-race-text">3 race conditions detected!</span>
+        </div>
+      </div>
+
+      <!-- How It Works Section -->
+      <div class="how-it-works-section">
+        <div class="how-it-works-header" id="how-it-works-header">
+          <span style="font-size: 1.2rem;">📚</span> <strong>How It Works</strong>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="how-it-works-body" id="how-it-works-body">
+          <p>
+            RaceGuard detects race conditions by checking <strong>Bernstein's Conditions</strong> and calculating
+            locksets using the <strong>Eraser algorithm</strong>:
+          </p>
+          <ul>
+            <li><strong>Bernstein's Conditions:</strong> Verifies if two concurrent operations from different threads
+              target the same variable and at least one is a <em>WRITE</em>.</li>
+            <li><strong>Eraser Lockset Algorithm:</strong> Calculates the candidate lock set $C(v)$ for each shared
+              variable $v$. If $C(v) = \emptyset$ during concurrent accesses, an unprotected race condition is flagged.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Tab Section: LEARN -->
+    <section id="tab-learn" class="tab-content" style="display: none;">
+      <div class="section-title">
+        <h2>🎓 Concurrency & Race Condition Theory</h2>
+      </div>
+
+      <div class="learn-grid">
+        <!-- Card 1: What is a Race Condition? -->
+        <div class="learn-card">
+          <div class="learn-icon warning-icon">⚠️</div>
+          <h3>What is a Race Condition?</h3>
+          <p>
+            A <strong>race condition</strong> occurs when two or more threads access a <strong>shared variable</strong>
+            concurrently and at least one of them <em>writes</em> to it. The final result depends on the unpredictable
+            order of execution — meaning the program may produce different outputs each time it runs.
+          </p>
+          <div class="example-box">
+            <strong>Example:</strong> Thread A reads <code class="code-cyan">counter = 5</code>, Thread B reads <code
+              class="code-cyan">counter = 5</code>, both compute <code class="code-cyan">5 + 1 = 6</code> and write
+            <code class="code-cyan">6</code>. The counter should be <strong>7</strong>, but ends up as
+            <strong>6</strong> — <em>a lost update</em>.
+          </div>
+        </div>
+
+        <!-- Card 2: Bernstein's Conditions -->
+        <div class="learn-card">
+          <div class="learn-icon cyan-icon">📐</div>
+          <h3>Bernstein's Conditions</h3>
+          <p>
+            Two operations in different threads form a <strong>potential race</strong> if all of these are true:
+          </p>
+          <ol class="learn-list numbered">
+            <li>They belong to <strong>different threads</strong></li>
+            <li>They access the <strong>same shared variable</strong></li>
+            <li>At least one is a <strong>WRITE</strong> operation</li>
+            <li>They can execute <strong>concurrently</strong> (no ordering constraint)</li>
+          </ol>
+          <p style="margin-top: 0.85rem; color: var(--text-dim); font-size: 0.85rem;">
+            If only READs are involved, there is no race — reading shared data is safe.
+          </p>
+        </div>
+
+        <!-- Card 3: Lockset / Eraser Algorithm -->
+        <div class="learn-card">
+          <div class="learn-icon warning-icon">🔒</div>
+          <h3>Lockset / Eraser Algorithm</h3>
+          <p>
+            The <strong>Eraser algorithm</strong> (from the 1997 Savage et al. paper) tracks <em>which locks are
+              held</em> when each operation executes. For each pair of conflicting operations:
+          </p>
+          <ul class="learn-list bulleted">
+            <li>Compute the <strong>lock set</strong> of each operation (all locks held at that point)</li>
+            <li>If the lock sets have a <strong>non-empty intersection</strong> &rarr; protected (no race)</li>
+            <li>If the lock sets have <strong>no common lock</strong> &rarr; unprotected &rarr; <strong
+                style="color: var(--critical-red);">RACE!</strong></li>
+          </ul>
+          <p style="margin-top: 0.85rem; color: var(--text-dim); font-size: 0.85rem;">
+            This is a conservative (may report false positives) but effective technique used in real-world race
+            detectors.
+          </p>
+        </div>
+
+        <!-- Card 4: Race Severity Levels -->
+        <div class="learn-card">
+          <div class="learn-icon warning-icon">🏷️</div>
+          <h3>Race Severity Levels</h3>
+          <div class="severity-item">
+            <div class="severity-header">
+              <span class="badge critical">CRITICAL</span>
+              <strong>Write-Write (WW)</strong>
+            </div>
+            <p>Two threads writing to the same variable without mutual exclusion. Causes catastrophic data corruption.
+            </p>
+          </div>
+          <div class="severity-item">
+            <div class="severity-header">
+              <span class="badge warning">WARNING</span>
+              <strong>Read-Write (RW)</strong>
+            </div>
+            <p>One thread writing while another reads without mutual exclusion. Causes stale or dirty reads.</p>
+          </div>
+          <div class="severity-item">
+            <div class="severity-header">
+              <span class="badge safe">SAFE</span>
+              <strong>Protected Access</strong>
+            </div>
+            <p>Accesses properly protected by a shared mutex lock, or concurrent READ-only operations.</p>
+          </div>
+        </div>
+
+        <!-- Card 5: How to Fix Race Conditions -->
+        <div class="learn-card">
+          <div class="learn-icon blue-icon">🛡️</div>
+          <h3>How to Fix Race Conditions</h3>
+          <p>
+            The most common solution is to use <strong>mutual exclusion (mutex)</strong>:
+          </p>
+          <ul class="learn-list bulleted">
+            <li>Acquire a mutex lock before accessing shared state.</li>
+            <li>Release the lock after finishing the access.</li>
+            <li>Ensure <strong>all threads</strong> use the <strong>same lock</strong> for a given shared variable.</li>
+          </ul>
+          <p style="margin-top: 1rem; color: var(--text-dim); font-size: 0.85rem;">
+            Toggle <strong>Fix Mode</strong> in the Design tab to see how adding locks eliminates detected races!
+          </p>
+        </div>
+
+        <!-- Card 6: Operation Types Guide -->
+        <div class="learn-card">
+          <div class="learn-icon pink-icon">📝</div>
+          <h3>Operation Types Guide</h3>
+          <div class="op-guide-list">
+            <div class="op-guide-item">
+              <span class="badge-op read">READ</span>
+              <span>Read from a shared variable (e.g., <code class="code-cyan">temp = counter</code>)</span>
+            </div>
+            <div class="op-guide-item">
+              <span class="badge-op write">WRITE</span>
+              <span>Write / update a shared variable (e.g., <code class="code-cyan">counter = temp + 1</code>)</span>
+            </div>
+            <div class="op-guide-item">
+              <span class="badge-op lock">LOCK</span>
+              <span>Acquire mutex lock (blocks other threads until unlocked)</span>
+            </div>
+            <div class="op-guide-item">
+              <span class="badge-op unlock">UNLOCK</span>
+              <span>Release mutex lock (allows waiting threads to proceed)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
