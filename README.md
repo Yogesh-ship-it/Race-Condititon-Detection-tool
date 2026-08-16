@@ -139,3 +139,6 @@ For each shared variable $v$:
 Distributed under the MIT License. See `LICENSE` for more information.
 # Race-Condititon-Detection-tool
 
+## 🎯 Project Goal
+
+RaceGuard aims to make race condition detection easier to understand by combining formal detection algorithms with an interactive visualization dashboard.
